@@ -1,13 +1,24 @@
 package main
 
 import (
+	"Server3/middleware"
 	v1handler "Server3/v1/handler"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("no env file")
+	}
+
 	r := gin.Default()
+
+	r.Use(middleware.ApiKeyMiddleWare())
 
 	v1 := r.Group("/api/v1")
 	{
