@@ -1,0 +1,42 @@
+{
+    "level": "info",
+    "method": "POST",
+    "path": "/api/v1/products",
+    "query": "",
+    "ip": "::1",
+    "user_agent": "PostmanRuntime/7.54.0",
+    "referer": "",
+    "protocol": "HTTP/1.1",
+    "host": "localhost:8080",
+    "content_type": "application/json",
+    "headers": {
+        "Accept": [
+            "*/*"
+        ],
+        "Accept-Encoding": [
+            "gzip, deflate, br"
+        ],
+        "Connection": [
+            "keep-alive"
+        ],
+        "Content-Length": [
+            "27"
+        ],
+        "Content-Type": [
+            "application/json"
+        ],
+        "Postman-Token": [
+            "734353be-8b0c-4a92-a24d-4311e246ff46"
+        ],
+        "User-Agent": [
+            "PostmanRuntime/7.54.0"
+        ],
+        "X-Api-Key": [
+            "1234"
+        ]
+    },
+    "status": 201,
+    "duration": "0s",
+    "time": "2026-07-02T08:34:03+07:00",
+    "message": "request completed"
+}
