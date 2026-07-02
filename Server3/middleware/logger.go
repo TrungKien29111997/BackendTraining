@@ -1,8 +1,13 @@
 package middleware
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +26,25 @@ func LoggerMiddleware() gin.HandlerFunc {
 	logger := zerolog.New(logFile).With().Timestamp().Logger()
 	return func(c *gin.Context) {
 		start := time.Now()
+		contentType := c.GetHeader("Content-Type")
+		requestBody := make(map[string]any)
+		if strings.HasPrefix(contentType, "multipart/form-data") {
+			log.Panicln("multipart/form-data")
+		} else {
+			// application/json
+			// application/x-www-form-urlencoded
+			bodyBytes, err := io.ReadAll(c.Request.Body)
+			if err != nil {
+				logger.Error().Str("error", err.Error()).Msg("read body error")
+				return
+			}
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+			if strings.HasSuffix(contentType, "application/json") {
+				json.Unmarshal(bodyBytes, &requestBody)
+			} else {
+
+			}
+		}
 		c.Next()
 		duration := time.Since(start)
 
@@ -38,6 +62,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 			Interface("headers", c.Request.Header).
 			Int("status", c.Writer.Status()).
 			Str("duration", duration.String()).
+			Interface("body", requestBody).
 			Msg("request completed")
 	}
 }

@@ -26,7 +26,7 @@
             "application/json"
         ],
         "Postman-Token": [
-            "734353be-8b0c-4a92-a24d-4311e246ff46"
+            "5974e2e4-5083-4524-adff-30c91a91599a"
         ],
         "User-Agent": [
             "PostmanRuntime/7.54.0"
@@ -36,7 +36,10 @@
         ]
     },
     "status": 201,
-    "duration": "0s",
-    "time": "2026-07-02T08:34:03+07:00",
+    "duration": "513.1µs",
+    "body": {
+        "Name": "KienDz"
+    },
+    "time": "2026-07-02T11:51:58+07:00",
     "message": "request completed"
 }
