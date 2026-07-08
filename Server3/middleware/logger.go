@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,21 +28,46 @@ func LoggerMiddleware() gin.HandlerFunc {
 		start := time.Now()
 		contentType := c.GetHeader("Content-Type")
 		requestBody := make(map[string]any)
+		var formfiles []map[string]any
+		// multipart/form-data
 		if strings.HasPrefix(contentType, "multipart/form-data") {
-			log.Panicln("multipart/form-data")
+			if err := c.Request.ParseMultipartForm(32 << 20); err != nil && c.Request.MultipartForm != nil {
+				// for value
+				for key, vals := range c.Request.MultipartForm.Value {
+					requestBody[key] = vals
+				}
+			}
+
+			// for file
+			for field, files := range c.Request.MultipartForm.File {
+				for _, file := range files {
+					formfiles = append(formfiles, map[string]any{
+						"filename":     file.Filename,
+						"size":         file.Size,
+						"field":        field,
+						"Content-Type": file.Header.Get("Content-Type"),
+					})
+				}
+			}
+			requestBody["form_files"] = formfiles
 		} else {
-			// application/json
-			// application/x-www-form-urlencoded
+
 			bodyBytes, err := io.ReadAll(c.Request.Body)
 			if err != nil {
 				logger.Error().Str("error", err.Error()).Msg("read body error")
 				return
 			}
 			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+			// application/json
 			if strings.HasSuffix(contentType, "application/json") {
 				json.Unmarshal(bodyBytes, &requestBody)
 			} else {
-
+				// application/x-www-form-urlencoded
+				value, _ := url.ParseQuery(string(bodyBytes))
+				for key, vals := range value {
+					requestBody[key] = vals
+				}
 			}
 		}
 		c.Next()
