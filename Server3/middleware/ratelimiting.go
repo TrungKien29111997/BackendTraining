@@ -57,7 +57,7 @@ func CleanUpClients() {
 	}
 }
 
-// hey -n 20 -c 1 -H "X-API-KEY: 1234" http://localhost:8080/api/v1/products
+// hey -n 2000 -c 1 -H "X-API-KEY: 1234" http://localhost:8080/api/v1/products
 func RateLimitMiddleWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip := GetClientIP(c)

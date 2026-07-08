@@ -5,25 +5,26 @@ import (
 	"encoding/json"
 	"io"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
 )
 
 func LoggerMiddleware() gin.HandlerFunc {
 	logPath := "logs/http.log"
-	if err := os.MkdirAll(filepath.Dir(logPath), os.ModePerm); err != nil {
-		panic(err)
-	}
-	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		panic(err)
-	}
-	logger := zerolog.New(logFile).With().Timestamp().Logger()
+
+	logger := zerolog.New(&lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    1, // megabytes
+		MaxBackups: 5,
+		MaxAge:     5,    //days
+		Compress:   true, // disabled by default
+		LocalTime:  true,
+	}).With().Timestamp().Logger()
+
 	return func(c *gin.Context) {
 		start := time.Now()
 		contentType := c.GetHeader("Content-Type")
