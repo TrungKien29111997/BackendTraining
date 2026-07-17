@@ -1,31 +1,19 @@
 package main
 
 import (
+	"sever4/internal/app"
 	"sever4/internal/config"
-	"sever4/internal/handler"
-	"sever4/internal/repository"
-	"sever4/internal/routes"
-	"sever4/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// Init Config
 	cfg := config.NewConfig()
 
-	userRepo := repository.NewUserRepository()
+	// Init Application
+	application := app.NewApplication(cfg)
 
-	userService := service.NewUserService(userRepo)
-
-	userHandler := handler.NewUserHandler(userService)
-
-	userRoutes := routes.NewUserRouter(userHandler)
-
-	r := gin.Default()
-
-	routes.RegisterRoutes(r, userRoutes)
-
-	if err := r.Run(cfg.ServerAddress); err != nil {
+	// Init Server
+	if err := application.Run(); err != nil {
 		panic(err)
 	}
 }
