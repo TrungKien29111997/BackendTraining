@@ -1,6 +1,7 @@
 package service
 
 import (
+	"sever4/internal/models"
 	"sever4/internal/repository"
 )
 
@@ -16,7 +17,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 func (us *userService) GetAllUser() {
 	us.repo.FillAll()
 }
-func (us *userService) CreateUser() {
+func (us *userService) CreateUser(user models.User) {
 
 }
 func (us *userService) GetUserByUUID() {

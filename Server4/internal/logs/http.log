@@ -1,0 +1,47 @@
+{
+    "level": "info",
+    "method": "GET",
+    "path": "/api/v1/users",
+    "query": "",
+    "ip": "::1",
+    "user_agent": "PostmanRuntime/7.54.0",
+    "referer": "",
+    "protocol": "HTTP/1.1",
+    "host": "localhost:8080",
+    "content_type": "application/json",
+    "headers": {
+        "Accept": [
+            "*/*"
+        ],
+        "Accept-Encoding": [
+            "gzip, deflate, br"
+        ],
+        "Connection": [
+            "keep-alive"
+        ],
+        "Content-Length": [
+            "27"
+        ],
+        "Content-Type": [
+            "application/json"
+        ],
+        "Postman-Token": [
+            "bd3ad86e-356d-4e40-b7f6-0661eaedd8b7"
+        ],
+        "User-Agent": [
+            "PostmanRuntime/7.54.0"
+        ],
+        "X-Api-Key": [
+            "1234"
+        ]
+    },
+    "status": 200,
+    "duration": "515.4µs",
+    "body": {
+        "Name": "KienDz"
+    },
+    "time": "2026-07-18T14:46:08+07:00",
+    "message": "request completed"
+}{"level":"info","method":"POST","path":"/api/v1/users","query":"","ip":"::1","user_agent":"PostmanRuntime/7.54.0","referer":"","protocol":"HTTP/1.1","host":"localhost:8080","content_type":"application/json","headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Connection":["keep-alive"],"Content-Length":["27"],"Content-Type":["application/json"],"Postman-Token":["978fb1ea-06f6-48b8-9823-babd0cb7c0ac"],"User-Agent":["PostmanRuntime/7.54.0"],"X-Api-Key":["1234"]},"status":200,"duration":"0s","body":{"Name":"KienDz"},"time":"2026-07-20T21:44:40+07:00","message":"request completed"}
+{"level":"info","method":"POST","path":"/api/v1/users","query":"","ip":"::1","user_agent":"PostmanRuntime/7.54.0","referer":"","protocol":"HTTP/1.1","host":"localhost:8080","content_type":"","headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Connection":["keep-alive"],"Content-Length":["0"],"Postman-Token":["22313bcd-e277-4b51-aba3-91b31d720c60"],"User-Agent":["PostmanRuntime/7.54.0"],"X-Api-Key":["1234"]},"status":400,"duration":"0s","body":{},"time":"2026-07-20T21:45:15+07:00","message":"request completed"}
+{"level":"info","method":"POST","path":"/api/v1/users","query":"","ip":"::1","user_agent":"PostmanRuntime/7.54.0","referer":"","protocol":"HTTP/1.1","host":"localhost:8080","content_type":"application/json","headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Connection":["keep-alive"],"Content-Length":["10"],"Content-Type":["application/json"],"Postman-Token":["0b506c5c-63ed-4585-a0b2-6241c2fd19bc"],"User-Agent":["PostmanRuntime/7.54.0"],"X-Api-Key":["1234"]},"status":200,"duration":"0s","body":{},"time":"2026-07-20T21:46:47+07:00","message":"request completed"}
