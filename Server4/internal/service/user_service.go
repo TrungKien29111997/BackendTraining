@@ -15,10 +15,11 @@ func NewUserService(repo repository.UserRepository) UserService {
 	}
 }
 func (us *userService) GetAllUser() {
-	us.repo.FillAll()
 }
-func (us *userService) CreateUser(user models.User) {
-
+func (us *userService) CreateUser(user models.User) models.User {
+	if _, exist := us.repo.FindByEmail(user.Email); exist {
+		return models.User{}
+	}
 }
 func (us *userService) GetUserByUUID() {
 

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"log"
 	"sever4/internal/models"
 )
 
@@ -15,13 +14,21 @@ func NewUserRepository() UserRepository {
 	}
 }
 func (ur *InMemoryUserRepository) FillAll() {
-	log.Println("Get All Users")
+
 }
 func (ur *InMemoryUserRepository) Create() {
 
 }
 func (ur *InMemoryUserRepository) FindByUUID() {
 
+}
+func (ur *InMemoryUserRepository) FindByEmail(email string) (models.User, bool) {
+	for _, user := range ur.user {
+		if user.Email == email {
+			return user, true
+		}
+	}
+	return models.User{}, false
 }
 func (ur *InMemoryUserRepository) Update() {
 
