@@ -3,7 +3,7 @@ package repository
 import "sever4/internal/models"
 
 type UserRepository interface {
-	Create()
+	Create(user models.User) error
 	FindByUUID()
 	Update()
 	Delete()

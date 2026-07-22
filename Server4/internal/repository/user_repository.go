@@ -16,8 +16,9 @@ func NewUserRepository() UserRepository {
 func (ur *InMemoryUserRepository) FillAll() {
 
 }
-func (ur *InMemoryUserRepository) Create() {
-
+func (ur *InMemoryUserRepository) Create(user models.User) error {
+	ur.user = append(ur.user, user)
+	return nil
 }
 func (ur *InMemoryUserRepository) FindByUUID() {
 

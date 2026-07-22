@@ -4,7 +4,7 @@ import "sever4/internal/models"
 
 type UserService interface {
 	GetAllUser()
-	CreateUser(user models.User) models.User
+	CreateUser(user models.User) (models.User, error)
 	GetUserByUUID()
 	UpdateUser()
 	DeleteUser()
