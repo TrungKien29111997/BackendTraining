@@ -4,9 +4,9 @@ import "sever4/internal/models"
 
 type UserRepository interface {
 	Create(user models.User) error
-	FindByUUID()
+	FindByUUID(uuid string) (models.User, bool)
 	Update()
 	Delete()
-	FillAll()
+	FillAll() ([]models.User, error)
 	FindByEmail(email string) (models.User, bool)
 }

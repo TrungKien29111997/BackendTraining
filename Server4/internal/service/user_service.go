@@ -18,8 +18,14 @@ func NewUserService(repo repository.UserRepository) UserService {
 		repo: repo,
 	}
 }
-func (us *userService) GetAllUser() {
+func (us *userService) GetAllUser() ([]models.User, error) {
+	users, err := us.repo.FillAll()
+	if err != nil {
+		return nil, utils.WrapError(err, "failed to get all user", utils.ErrInternalServerError)
+	}
+	return users, nil
 }
+
 func (us *userService) CreateUser(user models.User) (models.User, error) {
 	if _, exist := us.repo.FindByEmail(user.Email); exist {
 		return models.User{}, utils.NewError("user already exist", utils.ErrConflict)
@@ -38,8 +44,12 @@ func (us *userService) CreateUser(user models.User) (models.User, error) {
 
 	return user, nil
 }
-func (us *userService) GetUserByUUID() {
-
+func (us *userService) GetUserByUUID(uuid string) (models.User, error) {
+	user, exist := us.repo.FindByUUID(uuid)
+	if !exist {
+		return models.User{}, utils.NewError("user not found", utils.ErrNotFound)
+	}
+	return user, nil
 }
 func (us *userService) UpdateUser() {
 
