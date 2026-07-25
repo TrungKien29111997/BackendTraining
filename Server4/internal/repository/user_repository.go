@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"fmt"
 	"sever4/internal/models"
+	"slices"
 )
 
 type InMemoryUserRepository struct {
@@ -36,9 +38,21 @@ func (ur *InMemoryUserRepository) FindByEmail(email string) (models.User, bool) 
 	}
 	return models.User{}, false
 }
-func (ur *InMemoryUserRepository) Update() {
-
+func (ur *InMemoryUserRepository) Update(uuid string, user models.User) error {
+	for i, u := range ur.user {
+		if u.UUID == uuid {
+			ur.user[i] = user
+			return nil
+		}
+	}
+	return fmt.Errorf("user not found")
 }
-func (ur *InMemoryUserRepository) Delete() {
-
+func (ur *InMemoryUserRepository) Delete(uuid string) error {
+	for i, u := range ur.user {
+		if u.UUID == uuid {
+			ur.user = slices.Delete(ur.user, i, i+1)
+			return nil
+		}
+	}
+	return fmt.Errorf("user not found")
 }

@@ -79,3 +79,7 @@ func ReponseSuccess(c *gin.Context, status int, data any) {
 		"data":   data,
 	})
 }
+
+func ReponseStatusCode(c *gin.Context, status int) {
+	c.Status(status)
+}
