@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"hoc-gin/internal/models"
 	"hoc-gin/internal/repository"
 	"net/http"
@@ -27,9 +28,17 @@ func (uh *UserHandler) GetUserByUuid(ctx *gin.Context) {
 		})
 		return
 	}
-	uh.repo.Find(id)
+	var user models.User
+	if err := uh.repo.Find(id, &user); err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "user not founded"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "get user by uuid",
+		"data": user,
 	})
 }
 
@@ -41,8 +50,11 @@ func (uh *UserHandler) CreateUser(ctx *gin.Context) {
 		})
 		return
 	}
-	uh.repo.Create(user)
+	if err := uh.repo.Create(&user); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	ctx.JSON(http.StatusCreated, gin.H{
-		"message": "create user",
+		"data": user,
 	})
 }
