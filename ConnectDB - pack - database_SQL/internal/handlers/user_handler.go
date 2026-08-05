@@ -41,7 +41,7 @@ func (uh *UserHandler) CreateUser(ctx *gin.Context) {
 		})
 		return
 	}
-	uh.repo.Create(&user)
+	uh.repo.Create(user)
 	ctx.JSON(http.StatusCreated, gin.H{
 		"message": "create user",
 	})
