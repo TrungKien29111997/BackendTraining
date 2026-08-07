@@ -19,12 +19,11 @@ func main() {
 	if err := db.InitDB(); err != nil {
 		log.Fatal("unable to connect to db")
 	}
-	log.Println(db.DB)
 
 	r := gin.Default()
-	userRepo := repository.NewSQLUserRepository()
+	userRepo := repository.NewSQLUserRepository(db.DB)
 	user := handlers.NewUserHandler(userRepo)
-	r.GET("/api/v1/users/:id", user.GetUserByUuid)
+	r.GET("/api/v1/users/:uuid", user.GetUserByUuid)
 	r.POST("/api/v1/users", user.CreateUser)
 
 	r.Run(":8080")

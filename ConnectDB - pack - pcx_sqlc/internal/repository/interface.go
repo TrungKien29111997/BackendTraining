@@ -1,8 +1,13 @@
 package repository
 
-import "hoc-gin/internal/models"
+import (
+	"hoc-gin/internal/db/sqlc"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+)
 
 type UserRepository interface {
-	Create(user models.User)
-	Find(id int)
+	Create(ctx *gin.Context, input sqlc.CreateUserParams) (sqlc.User, error)
+	Find(ctx *gin.Context, uuid uuid.UUID) (sqlc.User, error)
 }

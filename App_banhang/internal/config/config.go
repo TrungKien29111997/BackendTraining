@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"user-management-api/internal/utils"
 )
 
@@ -13,12 +14,15 @@ type DatabaseConfig struct {
 	Name     string
 	SSLMode  string
 }
+
 type Config struct {
-	DB DatabaseConfig
+	ServerAddress string
+	DB            DatabaseConfig
 }
 
 func NewConfig() *Config {
 	return &Config{
+		ServerAddress: fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),
 		DB: DatabaseConfig{
 			Host:     utils.GetEnv("DB_HOST", "localhost"),
 			Port:     utils.GetEnv("DB_PORT", "5432"),
@@ -29,7 +33,6 @@ func NewConfig() *Config {
 		},
 	}
 }
-
 func (c *Config) DNS() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.DB.Host, c.DB.Port, c.DB.User, c.DB.Password, c.DB.Name, c.DB.SSLMode)

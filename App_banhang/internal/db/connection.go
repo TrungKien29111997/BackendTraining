@@ -3,10 +3,10 @@ package db
 import (
 	"context"
 	"fmt"
-	"hoc-gin/internal/config"
-	"hoc-gin/internal/db/sqlc"
 	"log"
 	"time"
+	"user-management-api/internal/config"
+	"user-management-api/internal/db/sqlc"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
