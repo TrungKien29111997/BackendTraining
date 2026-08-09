@@ -2,8 +2,10 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
+	"user-management-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
@@ -34,7 +36,17 @@ func getRateLimiter(ip string) *rate.Limiter {
 
 	client, exists := clients[ip]
 	if !exists {
-		limiter := rate.NewLimiter(5, 15) // 5 request/sec, brust 10
+		rateLimiterSecStr := utils.GetEnv("RATE_LIMITER_REQUEST_SEC", "5")
+		rateLimiterBurstStr := utils.GetEnv("RATE_LIMITER_BURST", "10")
+		rateLimiterSec, err := strconv.Atoi(rateLimiterSecStr)
+		if err != nil {
+			panic("invalid RATE_LIMITER_REQUEST_SEC: " + err.Error())
+		}
+		rateLimiterBurst, err := strconv.Atoi(rateLimiterBurstStr)
+		if err != nil {
+			panic("invalid RATE_LIMITER_BURST: " + err.Error())
+		}
+		limiter := rate.NewLimiter(rate.Limit(rateLimiterSec), rateLimiterBurst) // 5 request/sec, brust 10
 		newClient := &Client{limiter, time.Now()}
 		clients[ip] = newClient
 		return limiter

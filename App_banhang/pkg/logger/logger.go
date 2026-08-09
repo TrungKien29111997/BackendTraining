@@ -54,9 +54,9 @@ type PrettyJSONLogger struct {
 
 func (w PrettyJSONLogger) Write(p []byte) (n int, err error) {
 	var prettyJSON bytes.Buffer
-	err = json.Indent(&prettyJSON, p, "", "")
+	err = json.Indent(&prettyJSON, p, "", "  ")
 	if err != nil {
-		return w.Write(p)
+		return w.write.Write(p)
 	}
-	return w.Write(prettyJSON.Bytes())
+	return w.write.Write(prettyJSON.Bytes())
 }
