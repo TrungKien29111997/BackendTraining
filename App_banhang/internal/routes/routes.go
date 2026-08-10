@@ -19,8 +19,10 @@ func RegisterRoutes(r *gin.Engine, routes ...Route) {
 
 	recoveryLogger := newLoggerWithPath("../../internal/logs/recovery.log", "warning")
 
+	rateLimiterLogger := newLoggerWithPath("../../internal/logs/rate-limiter.log", "info")
+
 	r.Use(
-		middleware.RateLimiterMiddleware(),
+		middleware.RateLimiterMiddleware(rateLimiterLogger),
 		middleware.LoggerMiddleware(httpLogger),
 		middleware.RecoveryMiddleware(recoveryLogger),
 		middleware.ApiKeyMiddleware(),

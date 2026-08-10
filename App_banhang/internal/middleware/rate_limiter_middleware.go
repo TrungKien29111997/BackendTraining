@@ -8,6 +8,7 @@ import (
 	"user-management-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 	"golang.org/x/time/rate"
 )
 
@@ -69,22 +70,52 @@ func CleanupClients() {
 	}
 }
 
-// ab -n 20 -c 1 -H "X-API-Key:ab2a7a8a-d601-4bf7-b0e2-dd00e5459392" http://localhost:8080/api/v1/categories/golang
-func RateLimiterMiddleware() gin.HandlerFunc {
+// hey -n 25 -c 1 -H "X-API-KEY: 1234" http://localhost:8080/api/v1/users
+func RateLimiterMiddleware(rateLimiterLogger *zerolog.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ip := getClientIP(ctx)
 
 		limiter := getRateLimiter(ip)
 
 		if !limiter.Allow() {
+			if shouldLogRateLimit(ip) {
+				rateLimiterLogger.Warn().
+					Str("method", ctx.Request.Method).
+					Str("path", ctx.Request.URL.Path).
+					Str("query", ctx.Request.URL.RawQuery).
+					Str("client_ip", ctx.ClientIP()).
+					Str("user_agent", ctx.Request.UserAgent()).
+					Str("referer", ctx.Request.Referer()).
+					Str("protocol", ctx.Request.Proto).
+					Str("host", ctx.Request.Host).
+					Str("remote_addr", ctx.Request.RemoteAddr).
+					Interface("headers", ctx.Request.Header).
+					Str("request_uri", ctx.Request.RequestURI).
+					Msg("Rate limiter Log")
+			}
 			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
 				"error":   "Too many request",
 				"message": "Bạn đã gửi quá nhiêu request. Hãy thử lại sau",
 			})
-
 			return
 		}
 
 		ctx.Next()
 	}
+}
+
+var rateLimiterLogCache = sync.Map{}
+
+const rateLimiterLogCacheDuration = 10 * time.Second
+
+func shouldLogRateLimit(ip string) bool {
+	now := time.Now()
+	if v, ok := rateLimiterLogCache.Load(ip); ok {
+		lastLogTime := v.(time.Time)
+		if now.Sub(lastLogTime) < rateLimiterLogCacheDuration {
+			return false
+		}
+	}
+	rateLimiterLogCache.Store(ip, now)
+	return true
 }
