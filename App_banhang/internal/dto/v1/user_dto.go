@@ -1,5 +1,10 @@
 package v1dto
 
+import (
+	"user-management-api/internal/db/sqlc"
+	"user-management-api/internal/utils"
+)
+
 type UserDTO struct {
 	UUID   string `json:"uuid"`
 	Name   string `json:"full_name"`
@@ -27,12 +32,30 @@ type UpdateUserInput struct {
 	Level    int    `json:"level" binding:"required,oneof=1 2"`
 }
 
-func (input *CreateUserInput) MapCreateInputToModel() {
-
+func (input *CreateUserInput) MapCreateInputToModel() sqlc.CreateUserParams {
+	return sqlc.CreateUserParams{
+		UserFullname: input.Name,
+		UserEmail:    input.Email,
+		UserAge:      utils.ConvertToInt32Pointer(input.Age),
+		UserPassword: input.Password,
+		UserStatus:   int32(input.Status),
+		UserLevel:    int32(input.Level),
+	}
 }
 
 func (input *UpdateUserInput) MapUpdateInputToModel() {
 
+}
+
+func MapUserToDTO(user sqlc.User) *UserDTO {
+	return &UserDTO{
+		UUID:   user.Uuid.String(),
+		Name:   user.UserFullname,
+		Email:  user.UserEmail,
+		Age:    utils.ConvertPointerToInt32(user.UserAge),
+		Status: mapStatusText(int(user.UserStatus)),
+		Level:  mapLevelText(int(user.UserLevel)),
+	}
 }
 
 func mapStatusText(status int) string {

@@ -1,7 +1,12 @@
 package v1service
 
 import (
+	"user-management-api/internal/db/sqlc"
 	"user-management-api/internal/repository"
+	"user-management-api/internal/utils"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userService struct {
@@ -17,8 +22,19 @@ func NewUserService(repo repository.UserRepository) UserService {
 func (us *userService) GetAllUsers(search string, page, limit int) {
 }
 
-func (us *userService) CreateUser() {
-
+func (us *userService) CreateUser(ctx *gin.Context, userParam sqlc.CreateUserParams) (sqlc.User, error) {
+	context := ctx.Request.Context()
+	userParam.UserEmail = utils.NormalizeString(userParam.UserEmail)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userParam.UserPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return sqlc.User{}, utils.WrapError(err, "Failed to hash password", utils.ErrCodeInternal)
+	}
+	userParam.UserPassword = string(hashedPassword)
+	user, err := us.repo.Create(context, userParam)
+	if err != nil {
+		return sqlc.User{}, utils.WrapError(err, "Failed to create user", utils.ErrCodeInternal)
+	}
+	return user, nil
 }
 
 func (us *userService) GetUserByUUID(uuid string) {

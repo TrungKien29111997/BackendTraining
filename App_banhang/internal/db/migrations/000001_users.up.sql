@@ -10,9 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
 	user_age 		INT CHECK (user_age >= 1 AND user_age <= 150),
 	user_status 	INT NOT NULL DEFAULT 1 CHECK (user_status IN (1,2,3)),
 	user_level 		INT NOT NULL DEFAULT 1 CHECK (user_level IN (1,2,3)),
-	user_deleted_at 	TIMESTAMP DEFAULT NULL,
-	user_created_at 	TIMESTAMP NOT NULL DEFAULT now(),
-	user_updated_at 	TIMESTAMP NOT NULL DEFAULT now()
+	user_deleted_at 	TIMESTAMPTZ DEFAULT NULL,
+	user_created_at 	TIMESTAMPTZ NOT NULL DEFAULT now(),
+	user_updated_at 	TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Create comment

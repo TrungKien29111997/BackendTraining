@@ -1,16 +1,29 @@
 package repository
 
+import (
+	"context"
+	"user-management-api/internal/db/sqlc"
+)
+
 type SqlUserRepository struct {
+	db sqlc.Querier
 }
 
-func NewInMemoryUserRepository() UserRepository {
-	return &SqlUserRepository{}
+func NewInMemoryUserRepository(db sqlc.Querier) UserRepository {
+	return &SqlUserRepository{
+		db: db,
+	}
 }
 
 func (ur *SqlUserRepository) FindAll() {
 }
 
-func (ur *SqlUserRepository) Create() {
+func (ur *SqlUserRepository) Create(ctx context.Context, userParam sqlc.CreateUserParams) (sqlc.User, error) {
+	user, err := ur.db.CreateUser(ctx, userParam)
+	if err != nil {
+		return sqlc.User{}, err
+	}
+	return user, nil
 }
 
 func (ur *SqlUserRepository) FindByUUID(uuid string) {

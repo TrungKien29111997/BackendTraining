@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 	"user-management-api/internal/config"
+	"user-management-api/internal/db"
+	"user-management-api/internal/db/sqlc"
 	"user-management-api/internal/routes"
 	"user-management-api/internal/validation"
 
@@ -19,6 +21,9 @@ import (
 
 type Module interface {
 	Routes() routes.Route
+}
+type ModuleContext struct {
+	DB sqlc.Querier
 }
 
 type Application struct {
@@ -37,8 +42,12 @@ func NewApplication(cfg *config.Config) *Application {
 
 	r := gin.Default()
 
+	ctx := &ModuleContext{
+		DB: db.DB,
+	}
+
 	modules := []Module{
-		NewUserModule(),
+		NewUserModule(ctx),
 	}
 
 	routes.RegisterRoutes(r, getModulRoutes(modules)...)
