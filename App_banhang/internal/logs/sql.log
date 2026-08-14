@@ -1,0 +1,20 @@
+{
+    "level": "info",
+    "trace_id": "c38f5395-ec57-48ea-bfe9-6379e724c541",
+    "duration": 0,
+    "sql_original": "-- name: CreateUser :one\nINSERT INTO users (user_email,\n    user_password,\n    user_fullname,\n    user_age,\n    user_status,\n    user_level\n) VALUES (\n    $1, $2, $3, $4, $5, $6\n) RETURNING user_id, uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at\n",
+    "sql_clean": "INSERT INTO users (user_email, user_password, user_fullname, user_age, user_status, user_level ) VALUES ( 'kiendz2@gmail.com', '$2a$10$RWYiInJF0V9Fo.mdAQmaDeDd/6hf.iZc9b2nc3rM9qhbj20KTIQ6W', 'KienDz', 18, 1, 1 ) RETURNING user_id, uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at",
+    "query_name": "CreateUser",
+    "operation_type": "ONE",
+    "args": [
+        "kiendz2@gmail.com",
+        "$2a$10$RWYiInJF0V9Fo.mdAQmaDeDd/6hf.iZc9b2nc3rM9qhbj20KTIQ6W",
+        "KienDz",
+        18,
+        1,
+        1
+    ],
+    "event": "Query",
+    "time": "2026-08-14T16:03:05+07:00",
+    "message": "Executed SQL"
+}{"level":"info","trace_id":"240eb5c3-7f17-4d38-8fab-2b9f4f8370c1","duration":0,"sql_original":"-- name: CreateUser :one\nINSERT INTO users (user_email,\n    user_password,\n    user_fullname,\n    user_age,\n    user_status,\n    user_level\n) VALUES (\n    $1, $2, $3, $4, $5, $6\n) RETURNING user_id, uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at\n","sql_clean":"INSERT INTO users (user_email, user_password, user_fullname, user_age, user_status, user_level ) VALUES ( 'kiendz2@gmail.com', '$2a$10$nCvXxPtCqsfH6hDZfYc2Xus9ZXPFNmb./ml94R.Ei.SvLeOhT1ndm', 'KienDz', 18, 1, 1 ) RETURNING user_id, uuid, user_email, user_password, user_fullname, user_age, user_status, user_level, user_deleted_at, user_created_at, user_updated_at","query_name":"CreateUser","operation_type":"ONE","args":["kiendz2@gmail.com","$2a$10$nCvXxPtCqsfH6hDZfYc2Xus9ZXPFNmb./ml94R.Ei.SvLeOhT1ndm","KienDz",18,1,1],"event":"Query","time":"2026-08-14T16:04:23+07:00","message":"Executed SQL"}

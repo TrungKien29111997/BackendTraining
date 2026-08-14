@@ -1,0 +1,61 @@
+{
+    "level": "error",
+    "trace_id": "c38f5395-ec57-48ea-bfe9-6379e724c541",
+    "method": "POST",
+    "path": "/api/v1/users",
+    "query": "",
+    "client_ip": "::1",
+    "user_agent": "PostmanRuntime/7.56.1",
+    "referer": "http://localhost:8080/api/v1/users/",
+    "protocol": "HTTP/1.1",
+    "host": "localhost:8080",
+    "remote_addr": "[::1]:61908",
+    "request_uri": "/api/v1/users",
+    "content_length": 154,
+    "headers": {
+        "Accept": [
+            "*/*"
+        ],
+        "Accept-Encoding": [
+            "gzip, deflate, br"
+        ],
+        "Connection": [
+            "keep-alive"
+        ],
+        "Content-Length": [
+            "154"
+        ],
+        "Content-Type": [
+            "application/json"
+        ],
+        "Postman-Token": [
+            "7cb9073b-7591-482b-b943-e273588723d6"
+        ],
+        "Referer": [
+            "http://localhost:8080/api/v1/users/"
+        ],
+        "User-Agent": [
+            "PostmanRuntime/7.56.1"
+        ],
+        "X-Api-Key": [
+            "1234"
+        ]
+    },
+    "request_body": {
+        "age": 18,
+        "email": "kienDz2@gmail.com",
+        "level": 1,
+        "name": "KienDz",
+        "password": "kienDz2@gmail.com",
+        "status": 1
+    },
+    "status_code": 500,
+    "response_body": {
+        "code": "INTERNAL_SERVER_ERROR",
+        "detail": "ERROR: duplicate key value violates unique constraint \"users_user_email_key\" (SQLSTATE 23505)",
+        "error": "Failed to create user"
+    },
+    "duration_ms": 67,
+    "time": "2026-08-14T16:03:05+07:00",
+    "message": "HTTP Request Log"
+}{"level":"error","trace_id":"240eb5c3-7f17-4d38-8fab-2b9f4f8370c1","method":"POST","path":"/api/v1/users","query":"","client_ip":"::1","user_agent":"PostmanRuntime/7.56.1","referer":"http://localhost:8080/api/v1/users/","protocol":"HTTP/1.1","host":"localhost:8080","remote_addr":"[::1]:50335","request_uri":"/api/v1/users","content_length":154,"headers":{"Accept":["*/*"],"Accept-Encoding":["gzip, deflate, br"],"Connection":["keep-alive"],"Content-Length":["154"],"Content-Type":["application/json"],"Postman-Token":["0a48d06d-e71b-480b-a4a3-3ed349827f56"],"Referer":["http://localhost:8080/api/v1/users/"],"User-Agent":["PostmanRuntime/7.56.1"],"X-Api-Key":["1234"]},"request_body":{"age":18,"email":"kienDz2@gmail.com","level":1,"name":"KienDz","password":"kienDz2@gmail.com","status":1},"status_code":500,"response_body":{"code":"INTERNAL_SERVER_ERROR","detail":"ERROR: duplicate key value violates unique constraint \"users_user_email_key\" (SQLSTATE 23505)","error":"Failed to create user"},"duration_ms":57,"time":"2026-08-14T16:04:23+07:00","message":"HTTP Request Log"}

@@ -2,6 +2,7 @@ package logger
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"os"
@@ -20,6 +21,9 @@ type LoggerConfig struct {
 	Compress   bool
 	IsDev      string
 }
+type contextKey string
+
+const TraceIDKey contextKey = "trace_id"
 
 func NewLogger(config LoggerConfig) *zerolog.Logger {
 
@@ -29,7 +33,6 @@ func NewLogger(config LoggerConfig) *zerolog.Logger {
 	if err != nil {
 		lvl = zerolog.InfoLevel
 	}
-	zerolog.SetGlobalLevel(lvl)
 
 	var writer io.Writer
 
@@ -44,7 +47,7 @@ func NewLogger(config LoggerConfig) *zerolog.Logger {
 			Compress:   config.Compress,
 		}
 	}
-	logger := zerolog.New(writer).With().Timestamp().Logger()
+	logger := zerolog.New(writer).Level(lvl).With().Timestamp().Logger()
 	return &logger
 }
 
@@ -59,4 +62,11 @@ func (w PrettyJSONLogger) Write(p []byte) (n int, err error) {
 		return w.write.Write(p)
 	}
 	return w.write.Write(prettyJSON.Bytes())
+}
+
+func GetTraceID(ctx context.Context) string {
+	if traceID, ok := ctx.Value(TraceIDKey).(string); ok && traceID != "" {
+		return traceID
+	}
+	return ""
 }

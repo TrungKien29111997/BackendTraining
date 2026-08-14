@@ -8,3 +8,13 @@ INSERT INTO users (user_email,
 ) VALUES (
     $1, $2, $3, $4, $5, $6
 ) RETURNING *;
+
+-- name: UpdateUser :one
+UPDATE users
+SET user_password = COALESCE(sqlc.narg(user_password), user_password),
+    user_fullname = COALESCE(sqlc.narg(user_fullname), user_fullname),
+    user_age = COALESCE(sqlc.narg(user_age), user_age),
+    user_status = COALESCE(sqlc.narg(user_status), user_status),
+    user_level = COALESCE(sqlc.narg(user_level), user_level)
+WHERE user_Uuid = sqlc.narg(user_Uuid)
+RETURNING *;
