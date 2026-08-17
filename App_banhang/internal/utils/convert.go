@@ -19,12 +19,11 @@ func CamelToSnake(str string) string {
 func NormalizeString(text string) string {
 	return strings.ToLower(strings.TrimSpace(text))
 }
-func ConvertToInt32Pointer(value int) *int32 {
+func ConvertToInt32Pointer(value int32) *int32 {
 	if value == 0 {
 		return nil
 	}
-	int32Value := int32(value)
-	return &int32Value
+	return &value
 }
 func ConvertPointerToInt32(value *int32) int {
 	if value == nil {
