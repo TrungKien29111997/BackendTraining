@@ -43,3 +43,61 @@ WHERE
     user_uuid = sqlc.arg(user_uuid)::uuid
     AND user_deleted_at IS NOT NULL
 RETURNING *;
+
+-- name: ListUsersUserIdAsc :many
+SELECT * FROM users
+WHERE user_deleted_at IS NULL
+AND (
+    sqlc.arg(search)::TEXT IS NULL
+    OR sqlc.arg(search)::TEXT = ''
+    OR user_email ILIKE '%' || sqlc.arg(search) || '%'
+    OR user_fullname ILIKE '%' || sqlc.arg(search) || '%'
+)
+ORDER BY user_id ASC
+LIMIT $1 OFFSET $2;
+
+-- name: ListUsersUserIdDesc :many
+SELECT * FROM users
+WHERE user_deleted_at IS NULL
+AND (
+    sqlc.arg(search)::TEXT IS NULL
+    OR sqlc.arg(search)::TEXT = ''
+    OR user_email ILIKE '%' || sqlc.arg(search) || '%'
+    OR user_fullname ILIKE '%' || sqlc.arg(search) || '%'
+)
+ORDER BY user_id DESC
+LIMIT $1 OFFSET $2;
+
+-- name: ListUsersUserCreatedAtAsc :many
+SELECT * FROM users
+WHERE user_deleted_at IS NULL
+AND (
+    sqlc.arg(search)::TEXT IS NULL
+    OR sqlc.arg(search)::TEXT = ''
+    OR user_email ILIKE '%' || sqlc.arg(search) || '%'
+    OR user_fullname ILIKE '%' || sqlc.arg(search) || '%'
+)
+ORDER BY user_created_at ASC
+LIMIT $1 OFFSET $2;
+
+-- name: ListUsersUserCreatedAtDesc :many
+SELECT * FROM users
+WHERE user_deleted_at IS NULL
+AND (
+    sqlc.arg(search)::TEXT IS NULL
+    OR sqlc.arg(search)::TEXT = ''
+    OR user_email ILIKE '%' || sqlc.arg(search) || '%'
+    OR user_fullname ILIKE '%' || sqlc.arg(search) || '%'
+)
+ORDER BY user_created_at DESC
+LIMIT $1 OFFSET $2;
+
+-- name: CountUsers :one
+SELECT count(*) FROM users
+WHERE user_deleted_at IS NULL
+AND (
+    sqlc.arg(search)::TEXT IS NULL
+    OR sqlc.arg(search)::TEXT = ''
+    OR user_email ILIKE '%' || sqlc.arg(search) || '%'
+    OR user_fullname ILIKE '%' || sqlc.arg(search) || '%'
+);

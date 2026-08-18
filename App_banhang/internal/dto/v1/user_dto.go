@@ -71,13 +71,14 @@ func MapUserToDTO(user sqlc.User) *UserDTO {
 		age := int(*user.UserAge)
 		dto.Age = &age
 	}
-
-	// if user.UserDeletedAt.Valid {
-	// 	dto.DeletedAt = user.UserDeletedAt.Time.Format("2006-01-02 15:04:05")
-	// } else {
-	// 	dto.DeletedAt = ""
-	// }
 	return dto
+}
+func MapUsersToDTO(users []sqlc.User) []UserDTO {
+	dtos := make([]UserDTO, 0, len(users))
+	for _, v := range users {
+		dtos = append(dtos, *MapUserToDTO(v))
+	}
+	return dtos
 }
 
 func mapStatusText(status int) string {
@@ -104,4 +105,15 @@ func mapLevelText(status int) string {
 	default:
 		return "None"
 	}
+}
+
+type GetUsersParams struct {
+	Search  string `form:"search" binding:"omitempty,min=3,max=50,search"`
+	Page    int32  `form:"page" binding:"omitempty,gte=1"`
+	Limit   int32  `form:"limit" binding:"omitempty,gte=1,lte=500"`
+	OrderBy string `form:"order_by" binding:"omitempty,oneof=user_id user_created_at"`
+	Sort    string `form:"sort" binding:"omitempty,oneof=asc desc"`
+}
+type GetUserByUuidParam struct {
+	Uuid string `uri:"uuid" binding:"uuid"`
 }
