@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 	"user-management-api/internal/utils"
@@ -37,16 +36,9 @@ func getRateLimiter(ip string) *rate.Limiter {
 
 	client, exists := clients[ip]
 	if !exists {
-		rateLimiterSecStr := utils.GetEnv("RATE_LIMITER_REQUEST_SEC", "5")
-		rateLimiterBurstStr := utils.GetEnv("RATE_LIMITER_BURST", "10")
-		rateLimiterSec, err := strconv.Atoi(rateLimiterSecStr)
-		if err != nil {
-			panic("invalid RATE_LIMITER_REQUEST_SEC: " + err.Error())
-		}
-		rateLimiterBurst, err := strconv.Atoi(rateLimiterBurstStr)
-		if err != nil {
-			panic("invalid RATE_LIMITER_BURST: " + err.Error())
-		}
+		rateLimiterSec := utils.GetIntEnv("RATE_LIMITER_REQUEST_SEC", 5)
+		rateLimiterBurst := utils.GetIntEnv("RATE_LIMITER_BURST", 10)
+
 		limiter := rate.NewLimiter(rate.Limit(rateLimiterSec), rateLimiterBurst) // 5 request/sec, brust 10
 		newClient := &Client{limiter, time.Now()}
 		clients[ip] = newClient

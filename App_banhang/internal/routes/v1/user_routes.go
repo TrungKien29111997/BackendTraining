@@ -20,6 +20,7 @@ func (ur *UserRoutes) Register(r *gin.RouterGroup) {
 	users := r.Group("/users")
 	{
 		users.GET("", ur.handler.GetAllUsers)
+		users.GET("/soft-deleted", ur.handler.GetAllUsersSoftDeleted)
 		users.POST("", ur.handler.CreateUser)
 		users.GET("/:uuid", ur.handler.GetUserByUUID)
 		users.PUT("/:uuid", ur.handler.UpdateUser)

@@ -1,9 +1,11 @@
 package routes
 
 import (
+	"net/http"
 	"user-management-api/internal/middleware"
 	"user-management-api/internal/utils"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +23,7 @@ func RegisterRoutes(r *gin.Engine, routes ...Route) {
 
 	r.Use(
 		middleware.RateLimiterMiddleware(rateLimiterLogger),
+		middleware.CORSMiddleware(),
 		middleware.TraceMiddleware(),
 		middleware.LoggerMiddleware(httpLogger),
 		middleware.RecoveryMiddleware(recoveryLogger),
@@ -28,9 +31,18 @@ func RegisterRoutes(r *gin.Engine, routes ...Route) {
 		middleware.AuthMiddleware(),
 	)
 
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
+
 	v1api := r.Group("/api/v1")
 
 	for _, route := range routes {
 		route.Register(v1api)
 	}
+
+	r.NoRoute(func(ctx *gin.Context) {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error": "Not found",
+			"path":  ctx.Request.URL.Path,
+		})
+	})
 }

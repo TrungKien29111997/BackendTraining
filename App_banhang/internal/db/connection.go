@@ -50,6 +50,6 @@ func InitDB() error {
 	if err := DBPool.Ping(ctx); err != nil {
 		return fmt.Errorf("unable to ping database: %w", err)
 	}
-	log.Println("Connected")
+	log.Println("Connected database Postgres")
 	return nil
 }

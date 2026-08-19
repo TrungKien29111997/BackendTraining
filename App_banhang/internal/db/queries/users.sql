@@ -9,6 +9,11 @@ INSERT INTO users (user_email,
     $1, $2, $3, $4, $5, $6
 ) RETURNING *;
 
+-- name: GetUser :one
+SELECT * FROM users
+WHERE user_deleted_at IS NULL
+AND user_uuid = $1;
+
 -- name: UpdateUser :one
 UPDATE users
 SET user_password = COALESCE(sqlc.narg(user_password), user_password),

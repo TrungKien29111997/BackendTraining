@@ -37,6 +37,9 @@ func (uh *UserHandler) GetAllUsers(ctx *gin.Context) {
 	paginationRespone := utils.NewPaginationRespone(userDTOs, params.Page, params.Limit, totalUsers)
 	utils.ResponseSuccess(ctx, http.StatusOK, paginationRespone)
 }
+func (uh *UserHandler) GetAllUsersSoftDeleted(ctx *gin.Context) {
+	utils.ResponseSuccess(ctx, http.StatusOK, "")
+}
 
 func (uh *UserHandler) CreateUser(ctx *gin.Context) {
 	var input *v1dto.CreateUserInput
@@ -62,7 +65,18 @@ func (uh *UserHandler) GetUserByUUID(ctx *gin.Context) {
 		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
 		return
 	}
-	utils.ResponseSuccess(ctx, http.StatusOK, "")
+	userUuid, err := uuid.Parse(params.Uuid)
+	if err != nil {
+		utils.ResponseError(ctx, err)
+		return
+	}
+	getUser, err := uh.service.GetUserByUUID(ctx, userUuid)
+	if err != nil {
+		utils.ResponseError(ctx, err)
+		return
+	}
+	userDTO := v1dto.MapUserToDTO(getUser)
+	utils.ResponseSuccess(ctx, http.StatusOK, userDTO)
 }
 
 func (uh *UserHandler) UpdateUser(ctx *gin.Context) {
