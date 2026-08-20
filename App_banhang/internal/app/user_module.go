@@ -13,7 +13,7 @@ type UserModule struct {
 }
 
 func NewUserModule(ctx *ModuleContext) *UserModule {
-	userRepo := repository.NewInMemoryUserRepository(ctx.DB)
+	userRepo := repository.NewSQLUserRepository(ctx.DB)
 	userService := v1service.NewUserService(userRepo, ctx.Redis)
 	userHandler := v1handler.NewUserHandler(userService)
 	userRoutes := v1routes.NewUserRoutes(userHandler)

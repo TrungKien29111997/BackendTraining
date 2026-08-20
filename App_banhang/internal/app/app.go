@@ -14,6 +14,7 @@ import (
 	"user-management-api/internal/db/sqlc"
 	"user-management-api/internal/routes"
 	"user-management-api/internal/validation"
+	"user-management-api/pkg/auth"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -55,11 +56,14 @@ func NewApplication(cfg *config.Config) *Application {
 		Redis: redisClient,
 	}
 
+	tokenService := auth.NewJWTService()
+
 	modules := []Module{
 		NewUserModule(ctx),
+		NewAuthModule(ctx, tokenService),
 	}
 
-	routes.RegisterRoutes(r, getModulRoutes(modules)...)
+	routes.RegisterRoutes(r, tokenService, getModulRoutes(modules)...)
 
 	return &Application{
 		config:  cfg,

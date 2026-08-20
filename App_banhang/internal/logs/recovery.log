@@ -1,0 +1,20 @@
+{
+    "level": "error",
+    "path": "/api/v1/users",
+    "method": "GET",
+    "client_ip": "::1",
+    "panic": "runtime error: invalid memory address or nil pointer dereference",
+    "stack_at": "C:/Users/Admin/Downloads/BackEndTraining/SeverProject/App_banhang/internal/middleware/auth_middleware.go:27 +0xde",
+    "time": "2026-08-20T16:27:54+07:00",
+    "message": "Panic occurred"
+}
+{
+    "level": "error",
+    "path": "/api/v1/users",
+    "method": "GET",
+    "client_ip": "::1",
+    "panic": "runtime error: invalid memory address or nil pointer dereference",
+    "stack_at": "C:/Users/Admin/Downloads/BackEndTraining/SeverProject/App_banhang/internal/middleware/auth_middleware.go:27 +0xde",
+    "time": "2026-08-20T16:28:20+07:00",
+    "message": "Panic occurred"
+}
