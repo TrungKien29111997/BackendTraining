@@ -80,24 +80,6 @@ func (us *userService) GetAllUsers(ctx *gin.Context, search, orderBy, sort strin
 	return users, int32(total), nil
 }
 
-func (us *userService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams) (sqlc.User, error) {
-	context := ctx.Request.Context()
-	input.UserEmail = utils.NormalizeString(input.UserEmail)
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.UserPassword), bcrypt.DefaultCost)
-	if err != nil {
-		return sqlc.User{}, utils.WrapError(err, "Failed to hash password", utils.ErrCodeInternal)
-	}
-	input.UserPassword = string(hashedPassword)
-	user, err := us.repo.Create(context, input)
-	if err != nil {
-		return sqlc.User{}, utils.WrapError(err, "Failed to create user", utils.ErrCodeInternal)
-	}
-	if err := us.cache.Clear("users:*"); err != nil {
-		log.Printf("Failed to clear cache: %v", err)
-	}
-	return user, nil
-}
-
 func (us *userService) GetUserByUUID(ctx *gin.Context, uuid uuid.UUID) (sqlc.User, error) {
 	context := ctx.Request.Context()
 	getUser, err := us.repo.GetByUUID(context, uuid)

@@ -41,24 +41,6 @@ func (uh *UserHandler) GetAllUsersSoftDeleted(ctx *gin.Context) {
 	utils.ResponseSuccess(ctx, http.StatusOK, "")
 }
 
-func (uh *UserHandler) CreateUser(ctx *gin.Context) {
-	var input *v1dto.CreateUserInput
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
-		return
-	}
-	mapUserInput := input.MapCreateInputToModel()
-	createUser, err := uh.service.CreateUser(ctx, mapUserInput)
-	if err != nil {
-		utils.ResponseError(ctx, err)
-		return
-	}
-
-	userDTO := v1dto.MapUserToDTO(createUser)
-
-	utils.ResponseSuccess(ctx, http.StatusCreated, userDTO)
-}
-
 func (uh *UserHandler) GetUserByUUID(ctx *gin.Context) {
 	var params v1dto.GetUserByUuidParam
 	if err := ctx.ShouldBindUri(&params); err != nil {
