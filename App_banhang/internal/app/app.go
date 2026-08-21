@@ -15,6 +15,7 @@ import (
 	"user-management-api/internal/routes"
 	"user-management-api/internal/validation"
 	"user-management-api/pkg/auth"
+	"user-management-api/pkg/cache"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -55,8 +56,8 @@ func NewApplication(cfg *config.Config) *Application {
 		DB:    db.DB,
 		Redis: redisClient,
 	}
-
-	tokenService := auth.NewJWTService()
+	cacheRedisService := cache.NewRedisCacheService(redisClient)
+	tokenService := auth.NewJWTService(cacheRedisService)
 
 	modules := []Module{
 		NewUserModule(ctx),

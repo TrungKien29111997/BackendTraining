@@ -19,7 +19,7 @@ func NewAuthHandler(service v1service.AuthService) *AuthHandler {
 		service: service,
 	}
 }
-func (uh *AuthHandler) CreateUser(ctx *gin.Context) {
+func (uh *AuthHandler) Register(ctx *gin.Context) {
 	var input *v1dto.CreateUserInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
@@ -43,16 +43,35 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
 		return
 	}
-	_, accessToken, expiresIn, err := ah.service.Login(ctx, input.Email, input.Password)
+	_, accessToken, refreshToken, expiresIn, err := ah.service.Login(ctx, input.Email, input.Password)
 	if err != nil {
 		utils.ResponseError(ctx, err)
 		return
 	}
 	response := v1dto.LoginResponse{
-		AccessToken: accessToken,
-		ExpiresIn:   expiresIn,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    expiresIn,
 	}
 	//userDTO := v1dto.MapUserToDTO(authUser)
+	utils.ResponseSuccess(ctx, http.StatusOK, response)
+}
+func (ah *AuthHandler) RefreshToken(ctx *gin.Context) {
+	var input v1dto.RefreshTokenInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
+		return
+	}
+	accessToken, refreshToken, expiresIn, err := ah.service.RefreshToken(ctx, input.RefreshToken)
+	if err != nil {
+		utils.ResponseError(ctx, err)
+		return
+	}
+	response := v1dto.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    expiresIn,
+	}
 	utils.ResponseSuccess(ctx, http.StatusOK, response)
 }
 func (ah *AuthHandler) Logout(ctx *gin.Context) {

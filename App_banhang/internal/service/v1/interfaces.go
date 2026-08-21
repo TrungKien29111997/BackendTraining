@@ -17,8 +17,8 @@ type UserService interface {
 	RestoreUser(ctx *gin.Context, uuid uuid.UUID) (sqlc.User, error)
 }
 type AuthService interface {
-	Login(ctx *gin.Context, email, password string) (sqlc.User, string, int, error)
+	Login(ctx *gin.Context, email, password string) (sqlc.User, string, string, int, error)
 	Logout(ctx *gin.Context) error
 	CreateUser(ctx *gin.Context, input sqlc.CreateUserParams) (sqlc.User, error)
-	//Register(ctx *gin.Context, input sqlc.CreateUserParams) (sqlc.User, error)
+	RefreshToken(ctx *gin.Context, token string) (string, string, int, error)
 }

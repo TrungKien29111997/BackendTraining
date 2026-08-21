@@ -1,26 +1,32 @@
 package auth
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"time"
 	"user-management-api/internal/db/sqlc"
 	"user-management-api/internal/utils"
+	"user-management-api/pkg/cache"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
 type JWTService struct {
+	cache *cache.RedisCacheService
 }
-
-// type Claims struct {
-// 	jwt.RegisteredClaims
-// }
 
 type EncryptedPayload struct {
 	UserUUID  string `json:"user_uuid"`
 	UserEmail string `json:"email"`
 	Role      int32  `json:"role"`
+}
+type RefreshToken struct {
+	Token     string    `json:"token"`
+	UserUUID  string    `json:"user_uuid"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Revoked   bool      `json:"revoked"`
 }
 
 var (
@@ -29,11 +35,14 @@ var (
 )
 
 const (
-	AccessTokenTTL = 15 * time.Minute
+	AccessTokenTTL  = 15 * time.Minute
+	RefreshTokenTTL = 7 * 24 * time.Hour
 )
 
-func NewJWTService() TokenService {
-	return &JWTService{}
+func NewJWTService(cache *cache.RedisCacheService) TokenService {
+	return &JWTService{
+		cache: cache,
+	}
 }
 
 func (js *JWTService) GenerateAccessToken(user sqlc.User) (string, error) {
@@ -63,8 +72,19 @@ func (js *JWTService) GenerateAccessToken(user sqlc.User) (string, error) {
 	return token.SignedString([]byte(jwtSecret))
 }
 
-func (js *JWTService) GenerateRefreshToken() string {
-	return ""
+func (js *JWTService) GenerateRefreshToken(user sqlc.User) (RefreshToken, error) {
+	tokenBytes := make([]byte, 32)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		return RefreshToken{}, err
+	}
+	token := base64.URLEncoding.EncodeToString(tokenBytes)
+	refeshToken := RefreshToken{
+		Token:     token,
+		UserUUID:  user.UserUuid.String(),
+		ExpiresAt: time.Now().Add(RefreshTokenTTL),
+		Revoked:   false,
+	}
+	return refeshToken, nil
 }
 
 func (js *JWTService) ParseToken(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
@@ -101,4 +121,34 @@ func (js *JWTService) DecryptAccessTokenPayload(tokenString string) (*EncryptedP
 		return nil, utils.WrapError(err, "Cannot unmarshal data", utils.ErrCodeInternal)
 	}
 	return payload, nil
+}
+
+func (js *JWTService) StoreRefreshToken(token RefreshToken) error {
+	cacheKey := "refresh_token:" + token.Token
+	return js.cache.Set(cacheKey, token, RefreshTokenTTL)
+}
+
+func (js *JWTService) ValidateRefreshToken(token string) (RefreshToken, error) {
+	cacheKey := "refresh_token:" + token
+	var refreshToken RefreshToken
+	if err := js.cache.Get(cacheKey, &refreshToken); err != nil {
+		return RefreshToken{}, utils.NewError("Refresh token not found", utils.ErrCodeInternal)
+	}
+	if refreshToken.Revoked {
+		return RefreshToken{}, utils.NewError("Refresh token revoked", utils.ErrCodeUnauthorized)
+	}
+	if refreshToken.ExpiresAt.Before(time.Now()) {
+		return RefreshToken{}, utils.NewError("Refresh token expired", utils.ErrCodeUnauthorized)
+	}
+	return refreshToken, nil
+}
+
+func (js *JWTService) RevokeRefreshToken(token string) error {
+	cacheKey := "refresh_token:" + token
+	var refreshToken RefreshToken
+	if err := js.cache.Get(cacheKey, &refreshToken); err != nil {
+		return utils.NewError("Refresh token not found", utils.ErrCodeInternal)
+	}
+	refreshToken.Revoked = true
+	return js.cache.Set(cacheKey, refreshToken, time.Until(refreshToken.ExpiresAt))
 }

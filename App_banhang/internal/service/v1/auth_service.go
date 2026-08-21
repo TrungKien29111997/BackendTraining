@@ -7,6 +7,7 @@ import (
 	"user-management-api/pkg/auth"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -40,27 +41,79 @@ func (us *authService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams)
 	// }
 	return user, nil
 }
-func (as *authService) Login(ctx *gin.Context, email, password string) (sqlc.User, string, int, error) {
+func (as *authService) Login(ctx *gin.Context, email, password string) (sqlc.User, string, string, int, error) {
 	context := ctx.Request.Context()
 
 	email = utils.NormalizeString(email)
 
 	user, err := as.userRepo.GetByEmail(context, email)
 	if err != nil {
-		return sqlc.User{}, "", 0, utils.NewError("Failed to login", utils.ErrCodeUnauthorized)
+		return sqlc.User{}, "", "", 0, utils.NewError("Failed to login", utils.ErrCodeUnauthorized)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.UserPassword), []byte(password)); err != nil {
-		return sqlc.User{}, "", 0, utils.NewError("Failed to login", utils.ErrCodeUnauthorized)
+		return sqlc.User{}, "", "", 0, utils.NewError("Failed to login", utils.ErrCodeUnauthorized)
 	}
 
 	accessToken, err := as.tokenService.GenerateAccessToken(user)
 	if err != nil {
-		return sqlc.User{}, "", 0, utils.WrapError(err, "Failed to generate access token", utils.ErrCodeInternal)
+		return sqlc.User{}, "", "", 0, utils.WrapError(err, "Failed to generate access token", utils.ErrCodeInternal)
 	}
 
-	return user, accessToken, int(auth.AccessTokenTTL.Seconds()), nil
+	refreshToken, err := as.tokenService.GenerateRefreshToken(user)
+	if err != nil {
+		return sqlc.User{}, "", "", 0, utils.WrapError(err, "Failed to generate access token", utils.ErrCodeInternal)
+	}
+
+	if err := as.tokenService.StoreRefreshToken(refreshToken); err != nil {
+		return sqlc.User{}, "", "", 0, utils.WrapError(err, "Cannot store refresh token", utils.ErrCodeInternal)
+	}
+
+	return user, accessToken, refreshToken.Token, int(auth.AccessTokenTTL.Seconds()), nil
 }
 func (as *authService) Logout(ctx *gin.Context) error {
 	return nil
+}
+func (as *authService) RefreshToken(ctx *gin.Context, tokenStr string) (string, string, int, error) {
+
+	context := ctx.Request.Context()
+
+	// parse refresh token
+	token, err := as.tokenService.ValidateRefreshToken(tokenStr)
+	if err != nil {
+		return "", "", 0, err
+	}
+	userUuid, err := uuid.Parse(token.UserUUID)
+	if err != nil {
+		return "", "", 0, utils.NewError("Failed to parse user uuid", utils.ErrCodeUnauthorized)
+	}
+
+	// get user
+	user, err := as.userRepo.GetByUUID(context, userUuid)
+	if err != nil {
+		return "", "", 0, utils.NewError("Failed to get user", utils.ErrCodeUnauthorized)
+	}
+
+	//generate new access token
+	accessToken, err := as.tokenService.GenerateAccessToken(user)
+	if err != nil {
+		return "", "", 0, utils.WrapError(err, "Failed to generate access token", utils.ErrCodeInternal)
+	}
+
+	//generate new refresh token
+	refreshToken, err := as.tokenService.GenerateRefreshToken(user)
+	if err != nil {
+		return "", "", 0, utils.WrapError(err, "Failed to generate refresh token", utils.ErrCodeInternal)
+	}
+
+	// revoke old refresh token
+	if err := as.tokenService.RevokeRefreshToken(tokenStr); err != nil {
+		return "", "", 0, err
+	}
+
+	// save to redis cache
+	if err := as.tokenService.StoreRefreshToken(refreshToken); err != nil {
+		return "", "", 0, utils.WrapError(err, "Cannot store refresh token", utils.ErrCodeInternal)
+	}
+	return accessToken, refreshToken.Token, int(auth.AccessTokenTTL.Seconds()), nil
 }
