@@ -2,6 +2,7 @@ package v1service
 
 import (
 	"strings"
+	"sync"
 	"time"
 	"user-management-api/internal/db/sqlc"
 	"user-management-api/internal/repository"
@@ -12,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/time/rate"
 )
 
 type authService struct {
@@ -20,6 +22,17 @@ type authService struct {
 	repo         repository.UserRepository
 	cache        cache.RedisCacheService
 }
+type LoginAttempt struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
+var (
+	mu              sync.Mutex
+	clients         = make(map[string]*LoginAttempt)
+	LoginAttemptTTL = 5 * time.Minute
+	MaxLoginAttempt = 5
+)
 
 func NewAuthService(repo repository.UserRepository, tokenService auth.TokenService, cache cache.RedisCacheService) *authService {
 	return &authService{
@@ -29,7 +42,47 @@ func NewAuthService(repo repository.UserRepository, tokenService auth.TokenServi
 		cache:        cache,
 	}
 }
-func (us *authService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams) (sqlc.User, error) {
+
+func (as *authService) getClientIP(ctx *gin.Context) string {
+	ip := ctx.ClientIP()
+	if ip == "" {
+		ip = ctx.Request.RemoteAddr
+	}
+
+	return ip
+}
+
+func (as *authService) getLoginAttempt(ip string) *rate.Limiter {
+	mu.Lock()
+	defer mu.Unlock()
+
+	client, exists := clients[ip]
+	if !exists {
+		limiter := rate.NewLimiter(rate.Limit(float32(MaxLoginAttempt)/float32(LoginAttemptTTL.Seconds())), MaxLoginAttempt) // 5 request/sec, brust 10
+		newClient := &LoginAttempt{limiter, time.Now()}
+		clients[ip] = newClient
+		return limiter
+	}
+
+	client.lastSeen = time.Now()
+	return client.limiter
+}
+
+func (as *authService) checkLoginAttempt(ip string) error {
+	limiter := as.getLoginAttempt(ip)
+	if !limiter.Allow() {
+		return utils.NewError("Too many login attempt", utils.ErrCodeTooManyRequest)
+	}
+	return nil
+}
+
+func (as *authService) CleanupClients(ip string) {
+	mu.Lock()
+	defer mu.Unlock()
+	delete(clients, ip)
+}
+
+func (as *authService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams) (sqlc.User, error) {
 	context := ctx.Request.Context()
 	input.UserEmail = utils.NormalizeString(input.UserEmail)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.UserPassword), bcrypt.DefaultCost)
@@ -37,7 +90,7 @@ func (us *authService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams)
 		return sqlc.User{}, utils.WrapError(err, "Failed to hash password", utils.ErrCodeInternal)
 	}
 	input.UserPassword = string(hashedPassword)
-	user, err := us.repo.Create(context, input)
+	user, err := as.repo.Create(context, input)
 	if err != nil {
 		return sqlc.User{}, utils.WrapError(err, "Failed to create user", utils.ErrCodeInternal)
 	}
@@ -48,15 +101,22 @@ func (us *authService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams)
 }
 func (as *authService) Login(ctx *gin.Context, email, password string) (sqlc.User, string, string, int, error) {
 	context := ctx.Request.Context()
+	ip := as.getClientIP(ctx)
+
+	if err := as.checkLoginAttempt(ip); err != nil {
+		return sqlc.User{}, "", "", 0, err
+	}
 
 	email = utils.NormalizeString(email)
 
 	user, err := as.userRepo.GetByEmail(context, email)
 	if err != nil {
+		as.getLoginAttempt(ip)
 		return sqlc.User{}, "", "", 0, utils.NewError("Failed to login", utils.ErrCodeUnauthorized)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.UserPassword), []byte(password)); err != nil {
+		as.getLoginAttempt(ip)
 		return sqlc.User{}, "", "", 0, utils.NewError("Failed to login", utils.ErrCodeUnauthorized)
 	}
 
@@ -73,7 +133,7 @@ func (as *authService) Login(ctx *gin.Context, email, password string) (sqlc.Use
 	if err := as.tokenService.StoreRefreshToken(refreshToken); err != nil {
 		return sqlc.User{}, "", "", 0, utils.WrapError(err, "Cannot store refresh token", utils.ErrCodeInternal)
 	}
-
+	as.CleanupClients(ip)
 	return user, accessToken, refreshToken.Token, int(auth.AccessTokenTTL.Seconds()), nil
 }
 func (as *authService) Logout(ctx *gin.Context, refreshToken string) error {
