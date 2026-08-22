@@ -1,10 +1,13 @@
 package v1service
 
 import (
+	"strings"
+	"time"
 	"user-management-api/internal/db/sqlc"
 	"user-management-api/internal/repository"
 	"user-management-api/internal/utils"
 	"user-management-api/pkg/auth"
+	"user-management-api/pkg/cache"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -15,13 +18,15 @@ type authService struct {
 	userRepo     repository.UserRepository
 	tokenService auth.TokenService
 	repo         repository.UserRepository
+	cache        cache.RedisCacheService
 }
 
-func NewAuthService(repo repository.UserRepository, tokenService auth.TokenService) *authService {
+func NewAuthService(repo repository.UserRepository, tokenService auth.TokenService, cache cache.RedisCacheService) *authService {
 	return &authService{
 		userRepo:     repo,
 		tokenService: tokenService,
 		repo:         repo,
+		cache:        cache,
 	}
 }
 func (us *authService) CreateUser(ctx *gin.Context, input sqlc.CreateUserParams) (sqlc.User, error) {
@@ -71,7 +76,42 @@ func (as *authService) Login(ctx *gin.Context, email, password string) (sqlc.Use
 
 	return user, accessToken, refreshToken.Token, int(auth.AccessTokenTTL.Seconds()), nil
 }
-func (as *authService) Logout(ctx *gin.Context) error {
+func (as *authService) Logout(ctx *gin.Context, refreshToken string) error {
+
+	//context := ctx.Request.Context()
+
+	authHeader := ctx.GetHeader("Authorization")
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		return utils.NewError("Unauthorized", utils.ErrCodeUnauthorized)
+	}
+
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+	_, claims, err := as.tokenService.ParseToken(accessToken)
+	if err != nil {
+		return utils.NewError("Invalid access token", utils.ErrCodeUnauthorized)
+	}
+	if jti, ok := claims["jti"].(string); ok {
+		expUnix, _ := claims["exp"].(float64)
+		exp := time.Unix(int64(expUnix), 0)
+		key := "blacklist:" + jti
+		ttl := time.Until(exp)
+		as.cache.Set(key, "revoked", ttl)
+	}
+
+	// parse refresh token
+	token, err := as.tokenService.ValidateRefreshToken(refreshToken)
+	if err != nil {
+		return err
+	}
+	_, err = uuid.Parse(token.UserUUID)
+	if err != nil {
+		return utils.NewError("Failed to parse user uuid", utils.ErrCodeUnauthorized)
+	}
+	// revoke old refresh token
+	if err := as.tokenService.RevokeRefreshToken(refreshToken); err != nil {
+		return err
+	}
+
 	return nil
 }
 func (as *authService) RefreshToken(ctx *gin.Context, tokenStr string) (string, string, int, error) {

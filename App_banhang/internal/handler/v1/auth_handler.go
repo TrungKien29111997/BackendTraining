@@ -75,5 +75,15 @@ func (ah *AuthHandler) RefreshToken(ctx *gin.Context) {
 	utils.ResponseSuccess(ctx, http.StatusOK, response)
 }
 func (ah *AuthHandler) Logout(ctx *gin.Context) {
-
+	var input v1dto.RefreshTokenInput
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		utils.ResponseValidator(ctx, validation.HandleValidationErrors(err))
+		return
+	}
+	err := ah.service.Logout(ctx, input.RefreshToken)
+	if err != nil {
+		utils.ResponseError(ctx, err)
+		return
+	}
+	utils.ResponseSuccess(ctx, http.StatusOK, "Logout success !")
 }

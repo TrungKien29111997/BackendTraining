@@ -14,7 +14,7 @@ import (
 )
 
 type JWTService struct {
-	cache *cache.RedisCacheService
+	cache cache.RedisCacheService
 }
 
 type EncryptedPayload struct {
@@ -39,7 +39,7 @@ const (
 	RefreshTokenTTL = 7 * 24 * time.Hour
 )
 
-func NewJWTService(cache *cache.RedisCacheService) TokenService {
+func NewJWTService(cache cache.RedisCacheService) TokenService {
 	return &JWTService{
 		cache: cache,
 	}
