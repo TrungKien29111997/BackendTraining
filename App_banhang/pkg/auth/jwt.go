@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"time"
 	"user-management-api/internal/db/sqlc"
 	"user-management-api/internal/utils"
@@ -30,8 +31,8 @@ type RefreshToken struct {
 }
 
 var (
-	jwtSecret     = []byte(utils.GetEnv("JWT_SECRET", "secret"))
-	jwtEncryptKey = []byte(utils.GetEnv("JWT_ENCRYPT_KEY", "secret"))
+	jwtSecret     []byte
+	jwtEncryptKey []byte
 )
 
 const (
@@ -40,6 +41,8 @@ const (
 )
 
 func NewJWTService(cache cache.RedisCacheService) TokenService {
+	jwtSecret = []byte(utils.GetEnv("JWT_SECRET", ""))
+	jwtEncryptKey = []byte(utils.GetEnv("JWT_ENCRYPT_KEY", ""))
 	return &JWTService{
 		cache: cache,
 	}
@@ -56,7 +59,7 @@ func (js *JWTService) GenerateAccessToken(user sqlc.User) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	log.Printf("jwtEncryptKey length = %d", len(jwtEncryptKey))
 	encrypted, err := utils.EncryptAES(rawData, jwtEncryptKey)
 	if err != nil {
 		return "", err

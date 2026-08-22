@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 	"time"
 	"user-management-api/internal/config"
@@ -18,7 +17,6 @@ import (
 	"user-management-api/pkg/cache"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -41,8 +39,6 @@ func NewApplication(cfg *config.Config) *Application {
 	if err := validation.InitValidator(); err != nil {
 		log.Fatalf("Validator init failed %v", err)
 	}
-
-	loadEnv()
 
 	r := gin.Default()
 
@@ -111,19 +107,4 @@ func getModulRoutes(modules []Module) []routes.Route {
 		routeList[i] = module.Routes()
 	}
 	return routeList
-}
-
-func loadEnv() {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal("Unable to get working dir:", err)
-	}
-	evnPath := filepath.Join(cwd, ".env")
-
-	err = godotenv.Load(evnPath)
-	if err != nil {
-		log.Println("No .env file found")
-	} else {
-		log.Println("Load success .env")
-	}
 }

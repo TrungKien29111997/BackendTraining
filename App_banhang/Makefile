@@ -35,3 +35,6 @@ migrate_goto:
 	migrate -path $(MIGRATION_DIRS) -database "$(CONN_STRING)" goto $(VERSION)
 
 .PHONY: importdb exportdb server migrate_create migrate_up migrate_down sqlc pushDocker
+
+#go build -o .\bin\myapp.exe .\cmd\api
+#.\bin\myapp.exe
